@@ -1,7 +1,8 @@
 #  coding: utf-8
 import socketserver
 import os, re
-import urllib.request
+from urllib import request
+import os.path
 
 # Copyright 2013 Abram Hindle, Eddie Antonio Santos
 #
@@ -62,12 +63,29 @@ class MyWebServer(socketserver.BaseRequestHandler):
         if not re.match('^/$', required_file):
             try:
                 if not re.search('\.', required_file):
-                    file_folder = '\n'.join(os.listdir('www' + required_file))
-                    self.request.sendall(bytes("HTTP/1.1 200 OK\n", "utf-8"))
+                    if not os.path.exists("www" + required_file):
+                        print('check existance')
+                        self.request.sendall(
+                            bytes("HTTP/1.1 404 Not Found\n", "utf-8"))
 
-                    self.request.send(
-                        ("Content-type: text/%s \n" % 'html').encode('utf-8'))
-                    self.request.sendall(bytearray(file_folder, 'utf-8'))
+                    elif re.search('(?:\/(\w+)+)\/', required_file):
+                        #required_file = required_file + '/'
+                        print('has a slash')
+                        file_folder = '\n'.join(
+                            os.listdir('www' + required_file))
+                        self.request.sendall(
+                            bytes("HTTP/1.1 200 OK\n", "utf-8"))
+
+                        self.request.send(("Content-type: text/%s \n" %
+                                           'html').encode('utf-8'))
+                        self.request.sendall(bytearray(file_folder, 'utf-8'))
+                    else:
+                        print('does not have a slash')
+                        self.request.sendall(
+                            bytes("HTTP/1.1 301 Moved Permanently\n", "utf-8"))
+                        self.request.sendall(
+                            bytes('www' + required_file + '/'), 'utf-8')
+
                 elif re.search('\.', required_file):
                     with open('www' + required_file, 'rb') as user_file:
                         file_data = user_file.read()
@@ -78,22 +96,28 @@ class MyWebServer(socketserver.BaseRequestHandler):
                         self.request.send(("Content-type: text/%s \n" %
                                            file_type).encode('utf-8'))
                         self.request.sendall(file_data)
+                    print('else if')
 
             except:
+                print('except')
                 self.request.send("HTTP/1.1 404 Not Found \n".encode('utf-8'))
 
-        elif re.match('/', required_file):
+        elif re.match('^/$', required_file):
             file_folder = '\n'.join(os.listdir('www'))
             self.request.sendall(bytes("HTTP/1.1 200 OK\n", "utf-8"))
-
             self.request.send(
                 ("Content-type: text/%s \n" % 'html').encode('utf-8'))
             self.request.sendall(bytearray(file_folder, 'utf-8'))
+            #self.request.sendall()
+
+        else:
+            pass
 
     def handle(self):
         self.data = self.request.recv(1024).strip()
         print("Got a request of: %s\n" % self.data)
         print(f'\nuser_data: {self.data.decode()}')
+
         if re.search('GET', self.data.decode()):
             required_file = re.findall('(?:GET\s)([^\s]+)(?:\s.+)',
                                        self.data.decode())
