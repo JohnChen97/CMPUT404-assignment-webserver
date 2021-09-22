@@ -1,6 +1,6 @@
 #  coding: utf-8
 import socketserver
-import os, re
+import os, re, sys
 from urllib import request
 import os.path
 
@@ -84,7 +84,7 @@ class MyWebServer(socketserver.BaseRequestHandler):
                         self.request.sendall(
                             bytes("HTTP/1.1 301 Moved Permanently\n", "utf-8"))
                         self.request.sendall(
-                            bytes('www' + required_file + '/'), 'utf-8')
+                            bytes('www' + required_file + '/', 'utf-8'))
 
                 elif re.search('\.', required_file):
                     with open('www' + required_file, 'rb') as user_file:
@@ -96,10 +96,8 @@ class MyWebServer(socketserver.BaseRequestHandler):
                         self.request.send(("Content-type: text/%s \n" %
                                            file_type).encode('utf-8'))
                         self.request.sendall(file_data)
-                    print('else if')
 
             except:
-                print('except')
                 self.request.send("HTTP/1.1 404 Not Found \n".encode('utf-8'))
 
         elif re.match('^/$', required_file):
@@ -121,11 +119,9 @@ class MyWebServer(socketserver.BaseRequestHandler):
         if re.search('GET', self.data.decode()):
             required_file = re.findall('(?:GET\s)([^\s]+)(?:\s.+)',
                                        self.data.decode())
+            self.read_user_request(required_file[0])
         else:
             self.request.sendall(bytes("HTTP/1.1 405 Not Allowed\n", "utf-8"))
-        print(required_file)
-
-        self.read_user_request(required_file[0])
 
         self.request.sendall(bytearray("OK \n", 'utf-8'))
 
