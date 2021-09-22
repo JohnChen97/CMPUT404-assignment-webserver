@@ -66,23 +66,24 @@ class MyWebServer(socketserver.BaseRequestHandler):
                     if not os.path.exists("www" + required_file):
                         print('check existance')
                         self.request.sendall(
-                            bytes("HTTP/1.1 404 Not Found\n", "utf-8"))
+                            bytes("HTTP/1.1 404 Not Found\r\n", "utf-8"))
 
                     elif re.search('(?:\/(\w+)+)\/', required_file):
                         #required_file = required_file + '/'
                         print('has a slash')
-                        file_folder = '\n'.join(
+                        file_folder = '\r\n'.join(
                             os.listdir('www' + required_file))
                         self.request.sendall(
-                            bytes("HTTP/1.1 200 OK\n", "utf-8"))
+                            bytes("HTTP/1.1 200 OK\r\n", "utf-8"))
 
-                        self.request.send(("Content-type: text/%s \n" %
+                        self.request.send(("Content-type: text/%s \r\n\r\n" %
                                            'html').encode('utf-8'))
                         self.request.sendall(bytearray(file_folder, 'utf-8'))
                     else:
                         print('does not have a slash')
                         self.request.sendall(
-                            bytes("HTTP/1.1 301 Moved Permanently\n", "utf-8"))
+                            bytes("HTTP/1.1 301 Moved Permanently\r\n",
+                                  "utf-8"))
                         self.request.sendall(
                             bytes('www' + required_file + '/', 'utf-8'))
 
@@ -91,20 +92,21 @@ class MyWebServer(socketserver.BaseRequestHandler):
                         file_data = user_file.read()
                         file_type = self.get_file_type(required_file)
                         self.request.sendall(
-                            bytes("HTTP/1.1 200 OK\n", "utf-8"))
+                            bytes("HTTP/1.1 200 OK\r\n", "utf-8"))
 
-                        self.request.send(("Content-type: text/%s \n" %
+                        self.request.send(("Content-type: text/%s \r\n\r\n" %
                                            file_type).encode('utf-8'))
                         self.request.sendall(file_data)
 
             except:
-                self.request.send("HTTP/1.1 404 Not Found \n".encode('utf-8'))
+                self.request.send(
+                    "HTTP/1.1 404 Not Found \r\n".encode('utf-8'))
 
         elif re.match('^/$', required_file):
-            file_folder = '\n'.join(os.listdir('www'))
-            self.request.sendall(bytes("HTTP/1.1 200 OK\n", "utf-8"))
+            file_folder = '\r\n'.join(os.listdir('www'))
+            self.request.sendall(bytes("HTTP/1.1 200 OK\r\n", "utf-8"))
             self.request.send(
-                ("Content-type: text/%s \n" % 'html').encode('utf-8'))
+                ("Content-type: text/%s \r\n\r\n" % 'html').encode('utf-8'))
             self.request.sendall(bytearray(file_folder, 'utf-8'))
             #self.request.sendall()
 
@@ -113,17 +115,18 @@ class MyWebServer(socketserver.BaseRequestHandler):
 
     def handle(self):
         self.data = self.request.recv(1024).strip()
-        print("Got a request of: %s\n" % self.data)
-        print(f'\nuser_data: {self.data.decode()}')
+        print("Got a request of: %s\r\n" % self.data)
+        print(f'\r\nuser_data: {self.data.decode()}')
 
         if re.search('GET', self.data.decode()):
             required_file = re.findall('(?:GET\s)([^\s]+)(?:\s.+)',
                                        self.data.decode())
             self.read_user_request(required_file[0])
         else:
-            self.request.sendall(bytes("HTTP/1.1 405 Not Allowed\n", "utf-8"))
+            self.request.sendall(bytes("HTTP/1.1 405 Not Allowed\r\n",
+                                       "utf-8"))
 
-        self.request.sendall(bytearray("OK \n", 'utf-8'))
+        self.request.sendall(bytearray("OK \r\n", 'utf-8'))
 
 
 if __name__ == "__main__":
