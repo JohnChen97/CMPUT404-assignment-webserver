@@ -105,8 +105,10 @@ class MyWebServer(socketserver.BaseRequestHandler):
         elif re.match('^/$', required_file):
             file_folder = '\r\n'.join(os.listdir('www'))
             self.request.sendall(bytes("HTTP/1.1 200 OK\r\n", "utf-8"))
-            self.request.send(
-                ("Content-type: text/%s \r\n\r\n" % 'html').encode('utf-8'))
+            #self.request.send(
+            #("Content-type: text/%s \r\n\r\n" % 'html').encode('utf-8'))
+            self.request.send(("Content-type: application/%s \r\n\r\n" %
+                               'octet-stream').encode('utf-8'))
             self.request.sendall(bytearray(file_folder, 'utf-8'))
             #self.request.sendall()
 
@@ -125,8 +127,6 @@ class MyWebServer(socketserver.BaseRequestHandler):
         else:
             self.request.sendall(bytes("HTTP/1.1 405 Not Allowed\r\n",
                                        "utf-8"))
-
-        self.request.sendall(bytearray("OK \r\n", 'utf-8'))
 
 
 if __name__ == "__main__":
