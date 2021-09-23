@@ -34,29 +34,9 @@ www_files = os.listdir(path)
 
 
 class MyWebServer(socketserver.BaseRequestHandler):
-    '''
-    def css_file(self, user_data):
-        match_keyword = re.search("base\.css", user_data)
-        if match_keyword:
-            base_css = open('www/base.css', "rb").read()
-            print(base_css)
-            self.request.sendall(base_css)
-
-    def html_file(self, user_data):
-        match_keyword = re.search("index\.html", user_data)
-        if match_keyword:
-            index_html = open('www/index.html', "rb").read()
-            self.request.sendall(index_html)
-
-    def get_root(self, user_data):
-        css_keyword = re.search("base\.css", user_data)
-        html_keyword = re.search("index\.html", user_data)
-        if not css_keyword and not html_keyword:
-            self.request.sendall(bytearray(' '.join(www_files), 'utf-8'))
-    '''
     def get_file_type(self, file_name):
         file_type = re.findall('(?:.*\.)(\w+)', file_name)
-        print(file_type)
+
         return file_type[0]
 
     def read_user_request(self, required_file):
@@ -69,8 +49,7 @@ class MyWebServer(socketserver.BaseRequestHandler):
                             bytes("HTTP/1.1 404 Not Found\r\n", "utf-8"))
 
                     elif re.search('(?:\/(\w+)+)\/', required_file):
-                        #required_file = required_file + '/'
-                        print('has a slash')
+
                         file_folder = '\r\n'.join(
                             os.listdir('www' + required_file))
                         self.request.sendall(
@@ -78,7 +57,7 @@ class MyWebServer(socketserver.BaseRequestHandler):
 
                         self.request.send(("Content-type: text/%s \r\n\r\n" %
                                            'html').encode('utf-8'))
-                        #self.request.sendall(bytearray(file_folder, 'utf-8'))
+
                         with open('www' + required_file + 'index.html',
                                   'rb') as user_file:
                             file_data = user_file.read()
@@ -109,15 +88,13 @@ class MyWebServer(socketserver.BaseRequestHandler):
         elif re.match('^/$', required_file):
             file_folder = '\r\n'.join(os.listdir('www'))
             self.request.sendall(bytes("HTTP/1.1 200 OK\r\n", "utf-8"))
-            #self.request.send(
-            #("Content-type: text/%s \r\n\r\n" % 'html').encode('utf-8'))
+
             self.request.send(
                 ("Content-type: text/%s \r\n\r\n" % 'html').encode('utf-8'))
-            #self.request.sendall(bytearray(file_folder, 'utf-8'))
+
             with open('www/' + 'index.html', 'rb') as user_file:
                 file_data = user_file.read()
             self.request.sendall(file_data)
-            #self.request.sendall()
 
         else:
             pass
