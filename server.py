@@ -64,7 +64,7 @@ class MyWebServer(socketserver.BaseRequestHandler):
             try:
                 if not re.search('\.', required_file):
                     if not os.path.exists("www" + required_file):
-                        print('check existance')
+
                         self.request.sendall(
                             bytes("HTTP/1.1 404 Not Found\r\n", "utf-8"))
 
@@ -78,9 +78,13 @@ class MyWebServer(socketserver.BaseRequestHandler):
 
                         self.request.send(("Content-type: text/%s \r\n\r\n" %
                                            'html').encode('utf-8'))
-                        self.request.sendall(bytearray(file_folder, 'utf-8'))
+                        #self.request.sendall(bytearray(file_folder, 'utf-8'))
+                        with open('www' + required_file + 'index.html',
+                                  'rb') as user_file:
+                            file_data = user_file.read()
+                        self.request.sendall(file_data)
                     else:
-                        print('does not have a slash')
+
                         self.request.sendall(
                             bytes("HTTP/1.1 301 Moved Permanently\r\n",
                                   "utf-8"))
@@ -107,9 +111,12 @@ class MyWebServer(socketserver.BaseRequestHandler):
             self.request.sendall(bytes("HTTP/1.1 200 OK\r\n", "utf-8"))
             #self.request.send(
             #("Content-type: text/%s \r\n\r\n" % 'html').encode('utf-8'))
-            self.request.send(("Content-type: application/%s \r\n\r\n" %
-                               'octet-stream').encode('utf-8'))
-            self.request.sendall(bytearray(file_folder, 'utf-8'))
+            self.request.send(
+                ("Content-type: text/%s \r\n\r\n" % 'html').encode('utf-8'))
+            #self.request.sendall(bytearray(file_folder, 'utf-8'))
+            with open('www/' + 'index.html', 'rb') as user_file:
+                file_data = user_file.read()
+            self.request.sendall(file_data)
             #self.request.sendall()
 
         else:
